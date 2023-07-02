@@ -112,6 +112,57 @@ prediction_E.y_x<-function(ValorX,alfa,dframe){
   return(intervalo)
 }
 
+#Hipotesis Beta
+HipothesisBeta <- function(TipoBeta, ValorBeta, alfa, TipoHipo,dframe){
+  internalX<-as.vector(dframe$X)
+  tamano_muestra<-length(internalX)
+  Valores_respuesta<-Trouver_lineaire(dframe)
+  beta_ii<-switch (TipoBeta,
+    "0" = Valores_respuesta[1,2],
+    "1" = Valores_respuesta[2,2]
+  )
+  desvEst_e<-sqrt(Valores_respuesta[3,2]) 
+  Sxx<-Valores_respuesta[7,2]
+  
+  
+  Cii <- switch(  
+    TipoBeta,  
+    "0"= sum(internalX^2)/(tamano_muestra*Sxx),  
+    "1"= 1/Sxx
+  ) 
+  
+  Estadistico_T<-(beta_ii-ValorBeta)/(desvEst_e*sqrt(Cii))
+  
+  if (TipoHipo==-1) {
+    glib<-tamano_muestra-2
+    t_rechazo<-qt(1-(alfa),glib)
+    if(Estadistico_T<t_rechazo){
+      Texto<-"Se rechaza H0"
+    }else{
+      Texto<-"Se acepa H0"
+    }
+  } else if(TipoHipo==1){
+    glib<-tamano_muestra-2
+    t_rechazo<-qt(1-(alfa),glib)*(-1)
+    if(Estadistico_T>t_rechazo){
+      Texto<-"Se rechaza H0"
+    }else{
+      Texto<-"Se acepa H0"
+    }
+  } else if(TipoHipo==0) {
+    glib<-tamano_muestra-2
+    t_rechazo<-qt(1-(alfa/2),glib)
+    if(abs(Estadistico_T)>t_rechazo){
+      Texto<-"Se rechaza H0"
+    }else{
+      Texto<-"Se acepa H0"
+    }
+  }
+  
+  paste("Estadistico de prueba:",Estadistico_T," T Rechazo:",t_rechazo, Texto)
+  
+}
+
 
 #Datos a Calcular
 #X <- c(1, 4, 5, 9, 11, 13, 23, 23, 28)
@@ -133,6 +184,8 @@ intervalo_confE<-confiance_E.y_x(2,.1,df)
 intervalo_confE
 intervalo_predE<-prediction_E.y_x(2,.1,df)
 intervalo_predE
+
+HipothesisBeta(1,0,.05,0,df)
 
 
 
